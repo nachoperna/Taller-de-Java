@@ -6,6 +6,11 @@ public class Main {
       public static void main(String[] args) {
             List<Caso> casos = new ArrayList<>();
             initCasos(casos);
+            // System.out.println(casos.get(0).cantPasos());
+            for (Caso caso : casos) {
+                  System.out.println("------- CASO ----------");
+                  System.out.println(caso.cantPasos());
+            }
       }
 
       public static void initCasos(List<Caso> casos) {
