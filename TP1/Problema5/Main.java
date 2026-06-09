@@ -5,7 +5,7 @@ public class Main {
 
       public static void main(String[] args) {
             List<Caso> casos = new ArrayList<>();
-            initCasos(casos);
+            initCasos(casos); // Inicializamos los casos con los ejemplos del enunciado
             int i = 1;
             for (Caso caso : casos) {
                   System.out.println("CASO " + i + ": " + caso.cantPasos());
