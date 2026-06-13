@@ -1,0 +1,4 @@
+edu/unicen/tallerjava/todo/log/LogServiceTest.class
+edu/unicen/tallerjava/todo/todo/TodoServiceTest.class
+edu/unicen/tallerjava/todo/users/CurrentUserTest.class
+edu/unicen/tallerjava/todo/users/UserServiceTest.class

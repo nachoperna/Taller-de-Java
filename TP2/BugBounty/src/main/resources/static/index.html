@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collaborative ToDo</title>
+  <style>
+    :root {
+      --primary:       #4f46e5;
+      --primary-dark:  #4338ca;
+      --danger:        #ef4444;
+      --danger-dark:   #dc2626;
+      --bg:            #f1f5f9;
+      --card:          #ffffff;
+      --text:          #1e293b;
+      --muted:         #64748b;
+      --border:        #e2e8f0;
+      --radius:        10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ── */
+    #login-overlay {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50;
+    }
+    #login-overlay.hidden { display: none; }
+
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 2.25rem;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.08);
+    }
+    .login-card h1 { font-size: 1.6rem; color: var(--primary); margin-bottom: .25rem; }
+    .login-card .subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 1.75rem; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: .85rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    header h1 { font-size: 1.15rem; font-weight: 700; color: var(--primary); }
+    .header-right { display: flex; align-items: center; gap: .75rem; }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: #ede9fe; color: var(--primary);
+      border-radius: 999px; padding: .25rem .8rem;
+      font-size: .8rem; font-weight: 600;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #22c55e;
+      animation: blink 2.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+    /* ── MAIN GRID ── */
+    main {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      padding: 1.5rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .card-head {
+      padding: .9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-head h2 {
+      font-size: .78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted);
+    }
+    .badge {
+      background: #f1f5f9; color: var(--muted);
+      border-radius: 999px; padding: .15rem .55rem;
+      font-size: .72rem; font-weight: 700;
+    }
+    .card-body { padding: 1rem 1.2rem; flex: 1; }
+
+    /* ── FORMS ── */
+    .row { display: flex; gap: .5rem; margin-bottom: .9rem; }
+
+    input[type="text"] {
+      flex: 1;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: .5rem .75rem; font-size: .875rem;
+      outline: none; transition: border-color .15s;
+    }
+    input[type="text"]:focus { border-color: var(--primary); }
+
+    button {
+      background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius);
+      padding: .5rem 1.1rem; font-size: .875rem; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: background .15s;
+    }
+    button:hover { background: var(--primary-dark); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-del {
+      background: transparent; color: var(--danger);
+      padding: .25rem .45rem; font-size: .8rem; line-height: 1;
+    }
+    .btn-del:hover { background: #fee2e2; color: var(--danger-dark); }
+
+    /* ── LISTS ── */
+    .item-list {
+      list-style: none;
+      display: flex; flex-direction: column; gap: .45rem;
+      max-height: 420px; overflow-y: auto;
+    }
+
+    .item {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .5rem .7rem;
+      background: #f8fafc;
+      border: 1px solid var(--border); border-radius: 7px;
+      font-size: .86rem;
+    }
+    .item-text { flex: 1; word-break: break-word; }
+    .item-meta { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+
+    /* log layout */
+    .log-action { flex: 1; word-break: break-word; }
+    .log-user { font-size: .72rem; font-weight: 600; color: var(--primary); white-space: nowrap; }
+
+    .empty { color: var(--muted); font-size: .85rem; text-align: center; padding: 1.75rem 0; }
+
+    #login-error { color: var(--danger); font-size: .8rem; min-height: 1.2em; margin-top: .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- ─── LOGIN ─── -->
+<div id="login-overlay">
+  <div class="login-card">
+    <h1>Collaborative ToDo</h1>
+    <p class="subtitle">Ingresá tu nombre para comenzar</p>
+    <div class="row">
+      <input type="text" id="login-input" placeholder="Tu nombre"
+             onkeydown="if(event.key==='Enter') login()">
+      <button id="login-btn" onclick="login()">Entrar</button>
+    </div>
+    <p id="login-error"></p>
+  </div>
+</div>
+
+<!-- ─── APP ─── -->
+<header>
+  <h1>📋 Collaborative ToDo</h1>
+  <div class="header-right">
+    <span class="dot" title="Auto-actualización activa"></span>
+    <span class="pill" id="user-pill">—</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- TAREAS -->
+  <div class="card">
+    <div class="card-head">
+      <h2>Tareas</h2>
+      <span class="badge" id="todo-count">0</span>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <input type="text" id="todo-input" placeholder="Nueva tarea…"
+               onkeydown="if(event.key==='Enter') addTodo()">
+        <button onclick="addTodo()">Agregar</button>
+      </div>
+      <ul class="item-list" id="todo-list">
+        <li class="empty">Iniciá sesión para ver las tareas</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- USUARIOS -->
+  <div class="card">
+    <div class="card-head">
+      <h2>Usuarios</h2>
+      <span class="badge" id="user-count">0</span>
+    </div>
+    <div class="card-body">
+      <ul class="item-list" id="user-list">
+        <li class="empty">Iniciá sesión para ver los usuarios</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- LOGS -->
+  <div class="card">
+    <div class="card-head">
+      <h2>Logs</h2>
+      <span class="badge" id="log-count">0</span>
+    </div>
+    <div class="card-body">
+      <ul class="item-list" id="log-list">
+        <li class="empty">Iniciá sesión para ver los logs</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<script>
+'use strict';
+
+let currentUser = null;
+
+/* ── Utilidades ── */
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function get(path) {
+  const r = await fetch(path, { headers: { Accept: 'application/json' } });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+async function post(path, body) {
+  const r = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+function renderList(id, items, rowFn, emptyMsg) {
+  const ul = document.getElementById(id);
+  ul.innerHTML = (items && items.length)
+    ? items.map(rowFn).join('')
+    : `<li class="empty">${emptyMsg}</li>`;
+}
+
+/* ── Login ── */
+async function login() {
+  const input = document.getElementById('login-input');
+  const btn   = document.getElementById('login-btn');
+  const name  = input.value.trim();
+  if (!name) return;
+
+  btn.disabled = true;
+  document.getElementById('login-error').textContent = '';
+
+  try {
+    const user = await post('/api/user', { name });
+    if (!user || user.id == null) throw new Error('Sin ID');
+    currentUser = user;
+    onLoggedIn();
+  } catch (_) {
+    document.getElementById('login-error').textContent =
+      'No se pudo iniciar sesión. Intentá de nuevo.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function onLoggedIn() {
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('user-pill').textContent = currentUser.name;
+  refresh();
+  setInterval(refresh, 3000);
+}
+
+/* ── Carga de datos ── */
+async function loadTodos() {
+  try {
+    const todos = await get('/api/todo');
+    document.getElementById('todo-count').textContent = todos.length;
+    renderList('todo-list', todos,
+      t => `<li class="item">
+              <span class="item-text">${esc(t.content ?? '(sin contenido)')}</span>
+              <span class="item-meta">${esc(t.user?.name ?? '')}</span>
+              <button class="btn-del" onclick="deleteTodo('${esc(t.id)}')" title="Eliminar">✕</button>
+            </li>`,
+      'No hay tareas pendientes'
+    );
+  } catch (_) {}
+}
+
+async function loadUsers() {
+  try {
+    const users = await get('/api/user');
+    document.getElementById('user-count').textContent = users.length;
+    renderList('user-list', users,
+      u => `<li class="item">
+              <span class="item-text">${esc(u.name)}</span>
+              <span class="item-meta">#${esc(u.id)}</span>
+            </li>`,
+      'No hay usuarios'
+    );
+  } catch (_) {}
+}
+
+async function loadLogs() {
+  try {
+    const logs = await get('/api/log');
+    document.getElementById('log-count').textContent = logs.length;
+    renderList('log-list', [...logs].reverse(),
+      l => `<li class="item">
+              <span class="log-action">${esc(l.action)}</span>
+              <span class="log-user">${esc(l.user?.name ?? 'Sistema')}</span>
+            </li>`,
+      'No hay eventos registrados'
+    );
+  } catch (_) {}
+}
+
+function refresh() {
+  loadTodos();
+  loadUsers();
+  loadLogs();
+}
+
+/* ── Acciones ── */
+async function addTodo() {
+  const input = document.getElementById('todo-input');
+  const content = input.value.trim();
+  if (!content || !currentUser) return;
+  try {
+    await post('/api/todo', { content });
+    input.value = '';
+  } catch (_) {}
+  await loadTodos();
+}
+
+async function deleteTodo(id) {
+  try {
+    await fetch('/api/todo/' + id, { method: 'DELETE' });
+  } catch (_) {}
+  await loadTodos();
+}
+
+/* ── Arranque: verificar sesión existente ── */
+(async () => {
+  try {
+    const user = await get('/api/currentuser');
+    if (user && user.id != null) {
+      currentUser = user;
+      onLoggedIn();
+      return;
+    }
+  } catch (_) {}
+  /* sin sesión activa → mostrar login */
+})();
+</script>
+</body>
+</html>

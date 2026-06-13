@@ -1,0 +1,15 @@
+edu/unicen/tallerjava/todo/log/LogService.class
+edu/unicen/tallerjava/todo/users/User.class
+edu/unicen/tallerjava/todo/todo/ToDo.class
+edu/unicen/tallerjava/todo/utils/UUIDUtils.class
+edu/unicen/tallerjava/todo/users/UserController.class
+edu/unicen/tallerjava/todo/todo/TodoService$1.class
+edu/unicen/tallerjava/todo/users/UserRepository.class
+edu/unicen/tallerjava/todo/log/Log.class
+edu/unicen/tallerjava/todo/log/LogController.class
+edu/unicen/tallerjava/todo/todo/TodoService.class
+edu/unicen/tallerjava/todo/users/CurrentUserService.class
+edu/unicen/tallerjava/todo/users/UserService.class
+edu/unicen/tallerjava/todo/CollaborativeToDo.class
+edu/unicen/tallerjava/todo/todo/TodoRepository.class
+edu/unicen/tallerjava/todo/todo/TodoController.class
