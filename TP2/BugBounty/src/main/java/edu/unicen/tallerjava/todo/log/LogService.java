@@ -1,11 +1,12 @@
 package edu.unicen.tallerjava.todo.log;
 
-import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -18,7 +19,8 @@ import edu.unicen.tallerjava.todo.users.User;
 @Service
 public class LogService {
 	private final HashMap<User, List<Log>> logs = new HashMap<>();
-
+      private Semaphore mutex = new Semaphore(1);
+      
 	public List<Log> getLogs() {
 		return logs.values().stream().flatMap(list -> list.stream()).collect(Collectors.toList());
 	}
@@ -31,18 +33,25 @@ public class LogService {
 	 */
 	public void addLog(String action, User user) {
 		Log log = new Log(UUID.randomUUID(), action, user);
-		List<Log> list = logs.entrySet().stream()
+            try {
+                  mutex.acquire();
+            } catch (InterruptedException e) {
+                  e.printStackTrace(); 
+                  return;
+            }
+            List<Log> list = logs.entrySet().stream()
                   .filter(entry -> entry.getKey().getName().equals(user.getName()))
                   .map(Map.Entry::getValue)
                   .findFirst()
                   .orElse(null);
-		if (list == null) {
-			list = new ArrayList<>();
-			logs.put(user, list);
-		}
-		list.add(log);
-	}
 
+            if (list == null) {
+                  list = new ArrayList<>();
+                  logs.put(user, list);
+            }
+            list.add(log);
+            mutex.release();
+	}
 	/**
 	 * Limpia la lista de logs.
 	 */
