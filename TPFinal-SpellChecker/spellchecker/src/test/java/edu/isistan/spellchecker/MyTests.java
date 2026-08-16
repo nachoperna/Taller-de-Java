@@ -1,6 +1,75 @@
 package edu.isistan.spellchecker;
-import org.junit.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+
+import org.junit.Test;
+
+import edu.isistan.spellchecker.tokenizer.TokenScanner;
 
 /** Cree sus propios tests. */
 public class MyTests {
+
+      @Test public void testTokenScanner_EntradaVacia() throws IOException {
+            Reader in = new StringReader(""); 
+            TokenScanner d = new TokenScanner(in);
+            try {
+                  assertFalse("Fin de entrada", d.hasNext());
+            } finally {
+                  in.close();
+            }
+      }
+
+      @Test public void testTokenScanner_TokenPalabra() throws IOException {
+            Reader in = new StringReader("Palabra"); 
+            TokenScanner d = new TokenScanner(in);
+            try {
+                  assertTrue(d.hasNext());
+                  assertEquals("Palabra", d.next());
+                  assertFalse("Fin de entrada", d.hasNext());
+            } finally {
+                  in.close();
+            }
+      }
+      
+      @Test public void testTokenScanner_TokenNoPalabra() throws IOException {
+            Reader in = new StringReader("."); 
+            TokenScanner d = new TokenScanner(in);
+            try {
+                  assertTrue(d.hasNext());
+                  assertEquals(".", d.next());
+            } finally {
+                  in.close();
+            }
+      }
+      
+      @Test public void testTokenScanner_TokenNoPalabraPalabra() throws IOException {
+            Reader in = new StringReader(".Palabra"); 
+            TokenScanner d = new TokenScanner(in);
+            try {
+                  assertTrue(d.hasNext());
+                  assertEquals(".", d.next());
+                  assertTrue(d.hasNext());
+                  assertEquals("Palabra", d.next());
+            } finally {
+                  in.close();
+            }
+      }
+      
+      @Test public void testTokenScanner_TokenPalabraNoPalabra() throws IOException {
+            Reader in = new StringReader("Palabra."); 
+            TokenScanner d = new TokenScanner(in);
+            try {
+                  assertTrue(d.hasNext());
+                  assertEquals("Palabra", d.next());
+                  assertTrue(d.hasNext());
+                  assertEquals(".", d.next());
+            } finally {
+                  in.close();
+            }
+      }
 }
