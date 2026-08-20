@@ -1,6 +1,10 @@
 package edu.isistan.spellchecker.corrector;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashSet;
 
 import edu.isistan.spellchecker.tokenizer.TokenScanner;
 
@@ -12,6 +16,8 @@ import edu.isistan.spellchecker.tokenizer.TokenScanner;
  * o apostrofes.
  */
 public class Dictionary {
+
+      private HashSet<String> diccionario;
 
 	/**
 	 * Construye un diccionario usando un TokenScanner
@@ -25,8 +31,16 @@ public class Dictionary {
 	 * @throws IOException Error leyendo el archivo
 	 * @throws IllegalArgumentException el TokenScanner es null
 	 */
-	public Dictionary(TokenScanner ts) throws IOException {
 
+	public Dictionary(TokenScanner ts) throws IOException {
+            if (ts == null)
+                  throw new IllegalArgumentException();
+            diccionario = new HashSet<>();
+            while (ts.hasNext()){
+                  String palabra = ts.next();
+                  if (!palabra.isEmpty())
+                        diccionario.add(palabra.toLowerCase());
+            }
 	}
 
 	/**
@@ -52,7 +66,7 @@ public class Dictionary {
 	 * @return número de palabras únicas
 	 */
 	public int getNumWords() {
-		return -1;
+		return diccionario.size();
 	}
 
 	/**
@@ -68,6 +82,8 @@ public class Dictionary {
 	 * @return si la palabra está en el diccionario.
 	 */
 	public boolean isWord(String word) {
-		return false;
+		if (word == null)
+                  return false;
+            return diccionario.contains(word.toLowerCase());
 	}
 }
