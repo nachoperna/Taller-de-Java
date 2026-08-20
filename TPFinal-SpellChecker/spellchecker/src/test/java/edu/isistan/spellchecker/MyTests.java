@@ -1,16 +1,25 @@
 package edu.isistan.spellchecker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import edu.isistan.spellchecker.corrector.Corrector;
 import edu.isistan.spellchecker.corrector.Dictionary;
+import edu.isistan.spellchecker.corrector.impl.FileCorrector;
+import edu.isistan.spellchecker.corrector.impl.FileCorrector.FormatException;
 import edu.isistan.spellchecker.tokenizer.TokenScanner;
 
 /** Cree sus propios tests. */
@@ -90,5 +99,28 @@ public class MyTests {
             assertTrue(d.isWord("aPPle"));
             assertTrue(d.isWord("Apple"));
             assertTrue(d.isWord("APPLE"));
+      }
+
+      @Test public void testFileCorrector_EspaciosEnLineas() throws IOException, FormatException {
+            Corrector c = new FileCorrector(new FileReader("smallMisspellingsConEspacios.txt"));
+            assertNotNull("chimpanze ->  chimpanzee}", c.getCorrections("chimpanze"));
+      }
+
+      @Test public void testFileCorrector_SinCorrecciones() throws IOException, FormatException {
+            Corrector c = new FileCorrector(new FileReader("smallMisspellings.txt"));
+            assertEquals("tigger -> {tiger, trigger}", new TreeSet<>(), c.getCorrections("sincorreccion"));
+      }
+
+      @Test public void testFileCorrector_MultipleCorrecciones() throws IOException, FormatException {
+            Corrector c = new FileCorrector(new FileReader("smallMisspellings.txt"));
+            Set<String> result = c.getCorrections("tigger").stream().map(String::trim).collect(Collectors.toSet());
+            assertEquals("tigger -> {tiger, trigger}", new TreeSet<>(Arrays.asList("tiger", "trigger")), result);
+      }
+
+      @Test public void testFileCorrector_DistintasCapitalizaciones() throws IOException, FormatException {
+            Corrector c = new FileCorrector(new FileReader("smallMisspellings.txt"));
+            assertEquals("Gose -> Goose", new TreeSet<>(Arrays.asList("Goose")), c.getCorrections("Gose"));
+            assertEquals("gOSe -> goose", new TreeSet<>(Arrays.asList("goose")), c.getCorrections("gOSe"));
+            assertEquals("GOSE -> GOOSE", new TreeSet<>(Arrays.asList("Goose")), c.getCorrections("GOSE"));
       }
 }

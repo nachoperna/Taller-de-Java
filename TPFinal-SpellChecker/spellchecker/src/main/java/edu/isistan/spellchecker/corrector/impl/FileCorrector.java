@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import edu.isistan.spellchecker.corrector.Corrector;
 
@@ -110,7 +111,7 @@ public class FileCorrector extends Corrector {
                   if (!separador || mal_escrita.length() == 0 || correccion.length() == 0)
                         throw new FormatException("Formato de corrector no aceptado");
  
-                  correcciones.computeIfAbsent(mal_escrita.toString().toLowerCase(), k -> new HashSet<>()).add(correccion.toString());
+                  correcciones.computeIfAbsent(mal_escrita.toString().toLowerCase().trim(), k -> new HashSet<>()).add(correccion.toString());
             }
 	}
 
@@ -143,6 +144,10 @@ public class FileCorrector extends Corrector {
 	 * @throws IllegalArgumentException si la entrada no es una palabra válida 
 	 */
 	public Set<String> getCorrections(String wrong) {
-            return matchCase(wrong, correcciones.get(wrong.toLowerCase()));
+            try {
+                  return matchCase(wrong, correcciones.get(wrong.toLowerCase().trim()));
+            } catch (IllegalArgumentException e) {
+                  return new TreeSet<>();
+            }
 	}
 }
