@@ -87,32 +87,38 @@ public class TokenScanner implements Iterator<String> {
             StringBuilder token = new StringBuilder();
             int c = 0;
             char ch = ' ';
-            do {
+            boolean comienzo_en_blanco = false;
+            try {
+                  c = input.read();
+                  ch = (char) c;
+            } catch (IOException e) {
+                  e.printStackTrace();
+            }
+            if (Character.isWhitespace(c)){
+                  comienzo_en_blanco = true;
+            } else if (!isWordCharacter(c)){
+                  return String.valueOf(ch);
+            }
+            while (isWordCharacter(c) || comienzo_en_blanco){
+                  if (comienzo_en_blanco){
+                        comienzo_en_blanco = false;
+                  } else {
+                        token.append(ch);
+                  }
                   try {
                         c = input.read();
                         ch = (char) c;
                   } catch (IOException e) {
                         e.printStackTrace();
                   }
-                  if (isWordCharacter(c)) {
-                        token.append(ch);
-                  } else {
-                        if (token.length() == 0){
-                              return String.valueOf(ch);
-                        } 
-                        if (c != -1) {
-                              try {
-                                    input.unread(c);
-                                    System.out.println(token.toString());
-                                    return token.toString();
-                              } catch (IOException e) {
-                                    e.printStackTrace();
-                              }
-                        }
+            }
+            if (!Character.isWhitespace(c) && c != -1){
+                  try {
+                        input.unread(c);
+                  } catch (IOException e) {
+                        e.printStackTrace();
                   }
-            } while (c != -1);
-            
-            System.out.println(token.toString());
+            }
             return token.toString();
       }
 
