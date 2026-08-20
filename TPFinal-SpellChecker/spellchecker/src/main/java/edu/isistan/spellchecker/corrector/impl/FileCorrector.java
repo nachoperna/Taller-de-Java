@@ -1,16 +1,25 @@
 package edu.isistan.spellchecker.corrector.impl;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import edu.isistan.spellchecker.corrector.Corrector;
-
-import java.io.*;
 
 /**
  * Corrector basado en un archivo.
  * 
  */
 public class FileCorrector extends Corrector {
+      private Map<String, Set<String>> correcciones;
 
 	/** Clase especial que se utiliza al tener 
 	 * algún error de formato en el archivo de entrada.
@@ -78,7 +87,31 @@ public class FileCorrector extends Corrector {
 	 * @throws IllegalArgumentException reader es null
 	 */
 	public FileCorrector(Reader r) throws IOException, FormatException {
-
+            if (r == null)
+                  throw new IllegalArgumentException();
+            BufferedReader bf = new BufferedReader(r);
+            correcciones = new HashMap<>();
+            String linea;
+            while ((linea = bf.readLine()) != null){
+                  boolean separador = false;
+                  StringBuilder mal_escrita = new StringBuilder();
+                  StringBuilder correccion = new StringBuilder();
+                  for (char ch : linea.toCharArray()) {
+                        if (ch == ',') {
+                              separador = true;
+                              continue;
+                        }
+                        if (!separador){
+                              mal_escrita.append(ch);
+                        } else {
+                              correccion.append(ch);
+                        }
+                  }
+                  if (!separador || mal_escrita.length() == 0 || correccion.length() == 0)
+                        throw new FormatException("Formato de corrector no aceptado");
+ 
+                  correcciones.computeIfAbsent(mal_escrita.toString().toLowerCase(), k -> new HashSet<>()).add(correccion.toString());
+            }
 	}
 
 	/** Construye el Filereader.
@@ -110,6 +143,6 @@ public class FileCorrector extends Corrector {
 	 * @throws IllegalArgumentException si la entrada no es una palabra válida 
 	 */
 	public Set<String> getCorrections(String wrong) {
-		return null;
+            return matchCase(wrong, correcciones.get(wrong.toLowerCase()));
 	}
 }
