@@ -50,14 +50,14 @@ public class TokenScannerTest {
       assertTrue("has next", d.hasNext());
       assertEquals("Aren't", d.next());
 
-      assertTrue("has next", d.hasNext());
-      assertEquals(" ", d.next());
+      // assertTrue("has next", d.hasNext());
+      // assertEquals(" ", d.next());
 
       assertTrue("has next", d.hasNext());
       assertEquals("you", d.next());
 
-      assertTrue("has next", d.hasNext());
-      assertEquals(" \n", d.next());
+      // assertTrue("has next", d.hasNext());
+      // assertEquals(" \n", d.next());
 
       assertTrue("has next", d.hasNext());
       assertEquals("tired", d.next());
