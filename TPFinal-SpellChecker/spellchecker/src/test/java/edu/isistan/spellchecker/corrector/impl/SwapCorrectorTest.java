@@ -30,7 +30,7 @@ public class SwapCorrectorTest {
 			Dictionary d = new Dictionary(new TokenScanner(reader));
 			SwapCorrector swap = new SwapCorrector(d);
 			assertEquals("cya -> {cay}", makeSet(new String[]{"cay"}), swap.getCorrections("cya"));
-			assertEquals("oYurs -> {yours}", makeSet(new String[]{"yours"}), swap.getCorrections("oYurs"));
+			assertEquals("oYurs -> {Yours}", makeSet(new String[]{"Yours"}), swap.getCorrections("oYurs"));
 		} finally {
 			reader.close();
 		}
