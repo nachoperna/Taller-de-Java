@@ -1,6 +1,8 @@
 package edu.isistan.spellchecker.corrector.impl;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import edu.isistan.spellchecker.corrector.Corrector;
 import edu.isistan.spellchecker.corrector.Dictionary;
@@ -23,7 +25,8 @@ import edu.isistan.spellchecker.corrector.Dictionary;
  * Este corrector sugiere palabras que esten a edit distance uno.
  */
 public class Levenshtein extends Corrector {
-
+      private Dictionary dictionary;
+      private String alfabeto = "abcdefghijklmnñopqrstuvwxyz";
 
 	/**
 	 * Construye un Levenshtein Corrector usando un Dictionary.
@@ -32,7 +35,10 @@ public class Levenshtein extends Corrector {
 	 * @param dict
 	 */
 	public Levenshtein(Dictionary dict) {
-		throw new UnsupportedOperationException(); // STUB
+            if (dict == null) {
+                  throw new IllegalArgumentException();
+            }
+            dictionary = dict;
 	}
 
 	/**
@@ -40,7 +46,10 @@ public class Levenshtein extends Corrector {
 	 * @return todas las palabras a erase distance uno
 	 */
 	Set<String> getDeletions(String s) {
-		throw new UnsupportedOperationException(); // STUB
+            return IntStream.range(0, s.length())
+            .mapToObj(i -> s.substring(0, i) + s.substring(i + 1))
+            .filter(deletion -> dictionary.isWord(deletion.toLowerCase()))
+            .collect(Collectors.toSet());
 	}
 
 	/**
@@ -48,7 +57,20 @@ public class Levenshtein extends Corrector {
 	 * @return todas las palabras a substitution distance uno
 	 */
 	public Set<String> getSubstitutions(String s) {
-		throw new UnsupportedOperationException(); // STUB
+            Set<String> corrections = new HashSet<>();
+            for (int i = 0; i < s.length(); i++) {
+                  for (int j = 0; j < alfabeto.length(); j++) {
+                        String reemplazo = "";
+                        if (i+1 == s.length()){
+                              reemplazo = s.substring(0, i) + alfabeto.charAt(j);
+                        } else {
+                              reemplazo = s.substring(0, i) + alfabeto.charAt(j) + s.substring(i+1);
+                        }
+                        if (!reemplazo.equals(s) && dictionary.isWord(reemplazo.toLowerCase()))
+                              corrections.add(reemplazo);
+                  }
+            }
+            return corrections;
 	}
 
 
@@ -57,10 +79,29 @@ public class Levenshtein extends Corrector {
 	 * @return todas las palabras a insert distance uno
 	 */
 	public Set<String> getInsertions(String s) {
-		throw new UnsupportedOperationException(); // STUB
+            Set<String> corrections = new HashSet<>();
+            for (int i = -1; i < s.length(); i++) {
+                  for (int j = 0; j < alfabeto.length(); j++) {
+                        String reemplazo = "";
+                        if (i+1 == s.length()){
+                              reemplazo = s + alfabeto.charAt(j);
+                        } else {
+                              reemplazo = s.substring(0, i+1) + alfabeto.charAt(j) + s.substring(i+1);
+                        }
+                        if (dictionary.isWord(reemplazo.toLowerCase()))
+                              corrections.add(reemplazo);
+                  }
+            }
+            return corrections;
 	}
 
 	public Set<String> getCorrections(String wrong) {
-		throw new UnsupportedOperationException(); // STUB
+            if (wrong == null)
+                  throw new IllegalArgumentException();
+            Set<String> corrections = new HashSet<>();
+            corrections.addAll(getDeletions(wrong));
+            corrections.addAll(getSubstitutions(wrong));
+            corrections.addAll(getInsertions(wrong));
+            return matchCase(wrong, corrections);
 	}
 }
