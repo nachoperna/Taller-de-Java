@@ -1,16 +1,16 @@
 package edu.isistan.spellchecker;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.IntStream;
 
 import edu.isistan.spellchecker.corrector.Corrector;
 import edu.isistan.spellchecker.corrector.Dictionary;
+import edu.isistan.spellchecker.tokenizer.TokenScanner;
 
 /**
  * El SpellChecker usa un Dictionary, un Corrector, and I/O para chequear
@@ -89,7 +89,56 @@ public class SpellChecker {
 	 */
 	public void checkDocument(Reader in, InputStream input, Writer out) throws IOException {
 		Scanner sc = new Scanner(input);
-
-		// STUB
+            TokenScanner tokenizer = new TokenScanner(in);
+            boolean primer_token = true;
+            while (tokenizer.hasNext()){
+                  String token = tokenizer.next();
+                  if (!token.isEmpty()){
+                        if (!primer_token && (Character.getType(token.charAt(0)) != Character.OTHER_PUNCTUATION)){ // insertamos un espacio antes de cada token palabra, excepto el primero
+                              out.write(" ");
+                        } else {
+                              primer_token = false;
+                        }
+                        boolean palabra_valida = dict.isWord(token);
+                        if (palabra_valida || token.matches("\\d+") || (!palabra_valida && token.length() == 1)){
+                              out.write(token);
+                        } else {
+                              Set<String> correcciones = corr.getCorrections(token);
+                              mostrarCorrecciones(token, correcciones);
+                              int opcion = getNextInt(0, correcciones.size() + 2, sc);
+                              String corregida = token;
+                              if (opcion == 1){
+                                    System.out.print("\nIngrese la palabra corregida: ");
+                                    corregida = getNextString(sc);
+                              } else if (opcion != 0){
+                                    corregida = correcciones.toArray()[opcion-2].toString();
+                              }
+                              out.write(corregida);
+                        }
+                  }
+            }
 	}
+
+      private void mostrarCorrecciones(String mal_escrita, Set<String> correcciones) {
+            System.out.println("\n========================================");
+            System.out.println("         REVISION ORTOGRAFICA");
+            System.out.println("========================================");
+            
+            System.out.println("\nSe detecto un posible error en la palabra:");
+            System.out.println(">> '" + mal_escrita + "'\n");
+
+            System.out.println("Sugerencias de correccion:\n");
+            System.out.println("[0] Ignorar y continuar");
+            System.out.println("[1] Reemplazar con otra palabra");
+            Iterator<String> it = correcciones.iterator();
+            int i = 2;
+            while (it.hasNext()) {
+                  System.out.printf("\n[%d] Reemplazar con \"%s\"", i, it.next());
+                  i++;
+            }
+            
+            System.out.println("----------------------------------------");
+
+            System.out.print("Por favor, seleccione una opcion (0-" + correcciones.size() + "): ");
+      }
 }
