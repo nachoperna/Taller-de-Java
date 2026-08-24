@@ -90,15 +90,9 @@ public class SpellChecker {
 	public void checkDocument(Reader in, InputStream input, Writer out) throws IOException {
 		Scanner sc = new Scanner(input);
             TokenScanner tokenizer = new TokenScanner(in);
-            boolean primer_token = true;
             while (tokenizer.hasNext()){
-                  String token = tokenizer.next();
+                  String token = tokenizer.nextConEspacios();
                   if (!token.isEmpty()){
-                        if (!primer_token && (Character.getType(token.charAt(0)) != Character.OTHER_PUNCTUATION)){ // insertamos un espacio antes de cada token palabra, excepto el primero
-                              out.write(" ");
-                        } else {
-                              primer_token = false;
-                        }
                         boolean palabra_valida = dict.isWord(token);
                         if (palabra_valida || token.matches("\\d+") || (!palabra_valida && token.length() == 1)){
                               out.write(token);
@@ -123,22 +117,22 @@ public class SpellChecker {
             System.out.println("\n========================================");
             System.out.println("         REVISION ORTOGRAFICA");
             System.out.println("========================================");
-            
+ 
             System.out.println("\nSe detecto un posible error en la palabra:");
             System.out.println(">> '" + mal_escrita + "'\n");
 
             System.out.println("Sugerencias de correccion:\n");
             System.out.println("[0] Ignorar y continuar");
             System.out.println("[1] Reemplazar con otra palabra");
+
             Iterator<String> it = correcciones.iterator();
             int i = 2;
             while (it.hasNext()) {
                   System.out.printf("\n[%d] Reemplazar con \"%s\"", i, it.next());
                   i++;
             }
-            
-            System.out.println("----------------------------------------");
-
-            System.out.print("Por favor, seleccione una opcion (0-" + correcciones.size() + "): ");
+ 
+            System.out.println("\n----------------------------------------");
+            System.out.printf("Por favor, seleccione una opcion: ");
       }
 }

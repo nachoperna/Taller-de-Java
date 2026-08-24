@@ -37,7 +37,7 @@ public class TokenScanner implements Iterator<String> {
       * @return true si es un caracter
       */
       public static boolean isWordCharacter(int c) {
-            return Character.isLetterOrDigit(c) || (char) c == '\'';
+            return Character.isLetter(c) || (char) c == '\'';
       }
 
 
@@ -108,7 +108,7 @@ public class TokenScanner implements Iterator<String> {
                         e.printStackTrace();
                   }
             }
-            if (!Character.isWhitespace(c) && c != -1){
+            if (c != -1){
                   try {
                         input.unread(c);
                   } catch (IOException e) {
@@ -118,4 +118,23 @@ public class TokenScanner implements Iterator<String> {
             return token.toString();
       }
 
+
+      public String nextConEspacios() throws NoSuchElementException {
+            int c = 0;
+            char ch = ' ';
+            try {
+                  c = input.read();
+                  ch = (char) c;
+            } catch (IOException e) {
+                  e.printStackTrace();
+            }
+            if (Character.isWhitespace(c))
+                  return String.valueOf(ch);
+            try {
+                  input.unread(c);
+            } catch (IOException e) {
+                  e.printStackTrace();
+            }
+            return next();
+      }
 }
