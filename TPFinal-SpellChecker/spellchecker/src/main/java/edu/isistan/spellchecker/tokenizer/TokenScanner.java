@@ -37,7 +37,7 @@ public class TokenScanner implements Iterator<String> {
       * @return true si es un caracter
       */
       public static boolean isWordCharacter(int c) {
-            return Character.isLetter(c) || (char) c == '\'';
+            return Character.isLetterOrDigit(c) || (char) c == '\'';
       }
 
 
