@@ -56,7 +56,6 @@ public class SwapCorrector extends Corrector {
                         correcciones.add(swapeada);
 
             }
-            System.out.println(correcciones);
 		return correcciones;
 	}
 
