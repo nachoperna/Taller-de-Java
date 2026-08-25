@@ -17,7 +17,7 @@ import edu.isistan.spellchecker.tokenizer.TokenScanner;
  */
 public class Dictionary {
 
-      private HashSet<String> diccionario;
+      public HashSet<String> diccionario;
 
 	/**
 	 * Construye un diccionario usando un TokenScanner
