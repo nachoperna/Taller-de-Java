@@ -11,6 +11,7 @@ import edu.isistan.spellchecker.corrector.Corrector;
 import edu.isistan.spellchecker.corrector.Dictionary;
 import edu.isistan.spellchecker.corrector.impl.FileCorrector;
 import edu.isistan.spellchecker.corrector.impl.Levenshtein;
+import edu.isistan.spellchecker.corrector.impl.Levenshtein_LSH;
 import edu.isistan.spellchecker.corrector.impl.SwapCorrector;
 
 /**
@@ -46,6 +47,9 @@ public class SpellCheckerRunner {
 		}
 		if (type.equals("LEV")) {
 			return new Levenshtein(dict);
+		}
+		if (type.equals("LEV_LSH")) {
+			return new Levenshtein_LSH(dict);
 		}
 
 		return FileCorrector.make(type);
